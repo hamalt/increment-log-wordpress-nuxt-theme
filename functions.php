@@ -161,3 +161,24 @@ function get_site_description() {
     
     return $description;
 }
+
+/**
+ * 投稿の取得APIに情報を追加
+ *
+ * @param WP_REST_Response $response
+ * @param WP_Post $post
+ * @param WP_REST_Request $request
+ * @return mixed
+ */
+if ( ! function_exists( 'il_rest_prepare_post' ) ) :
+    function il_rest_prepare_post( $response, $post, $request ) {
+        // 前の記事
+        $response->data['prev_post'] = get_previous_post();
+
+        // 次の記事
+        $response->data['next_post'] = get_next_post();
+
+        return $response;
+    }
+endif;
+add_filter( 'rest_prepare_post', 'il_rest_prepare_post', 10, 3 );
