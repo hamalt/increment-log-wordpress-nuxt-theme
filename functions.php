@@ -172,6 +172,26 @@ function get_site_description() {
  */
 if ( ! function_exists( 'il_rest_prepare_post' ) ) :
     function il_rest_prepare_post( $response, $post, $request ) {
+    get_the_content();
+        // 関連記事
+        $related_posts_args = array(
+            'category__in'  =>  wp_get_post_categories( $post->ID ),
+            'numberposts'   =>  3,
+            'post__not_in'  => array( $post->ID )
+        );
+        $related_posts = get_posts( $related_posts_args );
+    
+        if ( $related_posts ) {
+            foreach( $related_posts as $key => $related_post ) {
+                if ( has_post_thumbnail( $related_post ) ) {
+                    $post_thumbnail_url = get_the_post_thumbnail_url( $related_post->ID, 'full' );
+                    $related_posts[$key]->post_thumbnail = $post_thumbnail_url;
+                }
+            }
+    
+            $response->data['related_posts'] = $related_posts;
+        }
+        
         // 前の記事
         $response->data['prev_post'] = get_previous_post();
 
@@ -182,3 +202,27 @@ if ( ! function_exists( 'il_rest_prepare_post' ) ) :
     }
 endif;
 add_filter( 'rest_prepare_post', 'il_rest_prepare_post', 10, 3 );
+
+//if ( ! function_exists( 'my_customize_rest_cors' ) ) :
+//    function my_customize_rest_cors() {
+//    remove_filter( 'rest_pre_serve_request', 'rest_send_cors_headers' );
+//    $origin = $_SERVER['HTTP_ORIGIN'];
+//
+////    if ($origin == "http://www.domain1.com"
+////        || $origin == "http://www.domain2.com"
+////        || $origin == "http://www.domain3.com") {
+////        header("Access-Control-Allow-Origin: $origin");
+////    }
+//
+//    var_dump($origin);
+//
+//    add_filter( 'rest_pre_serve_request', function( $value ) {
+//        header( 'Access-Control-Allow-Origin: *' );
+//        header( 'Access-Control-Allow-Methods: GET' );
+//        header( 'Access-Control-Allow-Credentials: true' );
+//        header( 'Access-Control-Expose-Headers: Link', false );
+//        return $value;
+//    } );
+//}
+//endif;
+//add_action( 'rest_api_init', 'my_customize_rest_cors', 15 );
